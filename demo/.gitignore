@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+/resources/sisdb-e2c4e-firebase-adminsdk-flay2-25e36b02c7.json
 ### STS ###
 .apt_generated
 .classpath
