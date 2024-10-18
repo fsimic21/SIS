@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/src/main/resources/sisdb-e2c4e-firebase-adminsdk-flay2-25e36b02c7.json
