@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.sis.demo.dto.AuthRequest;
 import com.sis.demo.dto.AuthResponse;
+import com.sis.demo.dto.UserDto;
 import com.sis.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,14 +28,14 @@ public class AuthController {
 
     @Autowired
     private JwtUtil jwtUtil;
-/*
+
  @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody AuthRequest authRequest) {
-        System.out.println("Registracija korisnika: " + authRequest.getEmail());
+    public ResponseEntity<String> registerUser(@RequestBody UserDto userDto) {
+        System.out.println("Registracija korisnika: " + userDto.getEmail());
         try {
             UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                    .setEmail(authRequest.getEmail())
-                    .setPassword(authRequest.getPassword());
+                    .setEmail(userDto.getEmail())
+                    .setPassword(userDto.getPassword());
 
             UserRecord userRecord = firebaseAuth.createUser(request);
             return ResponseEntity.ok("Korisnik uspješno registriran: " + userRecord.getUid());
@@ -42,7 +43,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Greška pri registraciji: " + e.getMessage());
         }
     }
-*/
+
  @PostMapping("/login")
  public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest authRequest) {
      try {
