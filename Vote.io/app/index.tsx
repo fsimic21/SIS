@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword} from 'firebase/auth'
 import { useState } from "react";
 import {auth} from '../firebaseConfig'
 import React from "react";
+import { LOGIN_API } from "@/constants/API_constants";
 
 export default function Index() {
   const [email, setEmail] = useState('');
@@ -14,17 +15,15 @@ export default function Index() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log(user);
-
       const idToken = await user.getIdToken();
 
-      const response = await fetch('http://localhost:8080/auth/login', {
+      const response = await fetch(LOGIN_API , {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          token: idToken,
+          idToken: idToken,
         }),
       });
 
