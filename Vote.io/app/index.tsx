@@ -14,6 +14,7 @@ export default function Index() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log(user);
 
       const idToken = await user.getIdToken();
 
