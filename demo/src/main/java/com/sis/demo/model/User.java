@@ -7,6 +7,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-
+    private String email;
 }

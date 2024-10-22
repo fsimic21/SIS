@@ -17,13 +17,11 @@ import org.springframework.security.core.Authentication;
 public class TestController {
 
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     @GetMapping
     public ResponseEntity<String> testJwt(@RequestBody AuthResponse authResponse) {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(jwtUtil.extractUsername(authResponse.getJwt()));
+        System.out.println("AAA");
 
         if (authentication != null && authentication.isAuthenticated()) {
             String currentUser = authentication.getName();
