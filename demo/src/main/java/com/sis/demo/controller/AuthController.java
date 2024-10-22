@@ -2,14 +2,21 @@ package com.sis.demo.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import com.sis.demo.dto.AuthRequest;
+import com.sis.demo.dto.AuthResponse;
+import com.sis.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Security;
 
 @RestController
 @RequestMapping("/auth")
@@ -18,8 +25,10 @@ public class AuthController {
     @Autowired
     private FirebaseAuth firebaseAuth;
 
-
-    @PostMapping("/register")
+    @Autowired
+    private JwtUtil jwtUtil;
+/*
+ @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody AuthRequest authRequest) {
         System.out.println("Registracija korisnika: " + authRequest.getEmail());
         try {
@@ -33,14 +42,15 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Greška pri registraciji: " + e.getMessage());
         }
     }
-
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody AuthRequest authRequest) {
-        try {
-            UserRecord userRecord = firebaseAuth.getUserByEmail(authRequest.getEmail());
-            return ResponseEntity.ok("Korisnik uspješno prijavljen: " + userRecord.getUid());
-        } catch (FirebaseAuthException e) {
-            return ResponseEntity.badRequest().body("Neuspješna prijava: " + e.getMessage());
-        }
-    }
+*/
+ @PostMapping("/login")
+ public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest authRequest) {
+     try {
+         String uid = jwtUtil.verifyFirebaseToken(authRequest.getIdToken());
+         String jwtToken = jwtUtil.generateToken(uid);
+         return ResponseEntity.ok(new AuthResponse(jwtToken));
+     } catch (FirebaseAuthException e) {
+         return ResponseEntity.badRequest().body(new AuthResponse("Neuspješna prijava: " + e.getMessage()));
+     }
+ }
 }
