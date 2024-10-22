@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequest {
-    private String idToken;
+public class AuthResponse {
+    private String jwt;
 }

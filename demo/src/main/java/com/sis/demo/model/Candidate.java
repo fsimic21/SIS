@@ -1,4 +1,4 @@
-package com.sis.demo.dto;
+package com.sis.demo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequest {
-    private String idToken;
+public class Candidate {
+    private String id;
+    private String name;
+    private String surname;
+    private int votes;
 }
