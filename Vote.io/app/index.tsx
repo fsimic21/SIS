@@ -5,12 +5,14 @@ import { useState } from "react";
 import {auth} from '../firebaseConfig'
 import React from "react";
 import { LOGIN_API } from "@/constants/API_constants";
+import { useRouter } from "expo-router";
 
 export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const router = useRouter();
   const login = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -28,10 +30,13 @@ export default function Index() {
       });
 
       const data = await response.json();
-      console.log('Backend response:', data);
+      router.replace("/homeScreen");
 
-    } catch (error) {
-      console.error('Error during login:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error during login:', error.message); 
+        setError(error.message);
+      }
     }
   };
   return (
