@@ -12,13 +12,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/candidates")
 public class CandidateController {
-
-    private final CandidateService candidateService;
-
     @Autowired
-    public CandidateController(CandidateService candidateService) {
-        this.candidateService = candidateService;
-    }
+    private CandidateService candidateService;
+
 
     @GetMapping
     public List<Candidate> getCandidates() {

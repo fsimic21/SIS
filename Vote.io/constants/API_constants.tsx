@@ -1,2 +1,2 @@
-const API = 'http://192.168.137.1:8080/';
-export const LOGIN_API = API + "auth/login"
+const API = 'http://10.24.15.34:8080/';
+export const LOGIN_API = API + "auth/login";

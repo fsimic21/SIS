@@ -36,7 +36,6 @@ public class CandidateService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return candidates;
     }
 }

@@ -49,6 +49,9 @@ public class AuthController {
      try {
          String uid = jwtUtil.verifyFirebaseToken(authRequest.getIdToken());
          String jwtToken = jwtUtil.generateToken(firebaseAuth.getUser(uid).getEmail());
+         System.out.println("uid: "+uid);
+         System.out.println("email: "+firebaseAuth.getUser(uid).getEmail());
+         System.out.println("jwt: "+jwtToken );
          return ResponseEntity.ok(new AuthResponse(jwtToken));
      } catch (FirebaseAuthException e) {
          return ResponseEntity.badRequest().body(new AuthResponse("Neuspješna prijava: " + e.getMessage()));
