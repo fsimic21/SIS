@@ -18,14 +18,14 @@ import java.util.Arrays;
 @RequestMapping("/api")
 public class CryptoController {
 
-    @Value("${app.crypto.privateKey}")
+    @Autowired
     private PrivateKey privateKey;
 
-    @Value("${app.crypto.frontendPublicKey}")
-    private  PublicKey frontendPublicKey;
+    @Autowired
+    private PublicKey frontendPublicKey;
 
     @Autowired
-    VoteService voteService;
+    private VoteService voteService;
 
     @PostMapping("/submit-data")
     public String receiveData(@RequestBody CryptoRequest request) throws Exception {
@@ -43,4 +43,5 @@ public class CryptoController {
         return "Data is valid and decrypted: " + new String(decryptedData);
     }
 }
+
 

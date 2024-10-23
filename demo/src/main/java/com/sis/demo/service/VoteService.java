@@ -21,26 +21,28 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 
+import javax.crypto.SecretKey;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+
 @Service
 public class VoteService {
 
-
-    @Value("${app.crypto.aesKey}")
-    private SecretKey aesKey;
-
     private final Firestore firestore;
+    private final SecretKey aesKey;
 
     @Autowired
-    public VoteService(Firestore firestore) {
+    public VoteService(Firestore firestore, SecretKey aesKey) {
         this.firestore = firestore;
+        this.aesKey = aesKey;
     }
 
-    public String saveVote(String string) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-
-        String[] array = string.split(".");
+    public String saveVote(String string) throws Exception {
+        String[] array = string.split("\\.");
         Vote vote = new Vote(array[0], array[1], Instant.now());
-        vote.setVoterOib(AesUtil.encrypt("AES",vote.getVoterOib(), aesKey));
-        vote.setCandidateId(AesUtil.encrypt("AES",vote.getCandidateId(), aesKey));
+        vote.setVoterOib(AesUtil.encrypt("AES", vote.getVoterOib(), aesKey));
+        vote.setCandidateId(AesUtil.encrypt("AES", vote.getCandidateId(), aesKey));
 
         CollectionReference votesCollection = firestore.collection("votes");
 
@@ -53,3 +55,4 @@ public class VoteService {
         }
     }
 }
+
