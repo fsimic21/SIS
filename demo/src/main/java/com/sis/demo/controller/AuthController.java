@@ -46,6 +46,7 @@ public class AuthController {
 
  @PostMapping("/login")
  public ResponseEntity<AuthResponse> loginUser(@RequestBody AuthRequest authRequest) {
+     System.out.println(authRequest);
      try {
          String uid = jwtUtil.verifyFirebaseToken(authRequest.getIdToken());
          String jwtToken = jwtUtil.generateToken(firebaseAuth.getUser(uid).getEmail());
