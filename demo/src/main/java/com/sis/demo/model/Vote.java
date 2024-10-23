@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,5 +15,5 @@ import lombok.Setter;
 public class Vote {
     private String voterOib;
     private String candidateId;
-    private String voteTimestamp;
+    private Instant voteTimestamp;
 }
