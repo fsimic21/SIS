@@ -24,6 +24,9 @@ public class VoteService {
     @Autowired
     private CandidateService candidateService;
 
+    @Autowired
+    private OibMockService oibMockService;
+
     public String saveVote(String string) throws Exception {
         String[] array = string.split("\\.");
         Vote vote = new Vote(array[0], array[1], Instant.now());
@@ -31,6 +34,7 @@ public class VoteService {
         vote.setCandidateId(AesUtil.encrypt("AES", vote.getCandidateId(), aesKey));
 
         CollectionReference votesCollection = firestore.collection("votes");
+        oibMockService.setOibVoted(array[0]);
         candidateService.incrementVotes(array[1]);
 
         try {
