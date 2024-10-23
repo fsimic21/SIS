@@ -27,7 +27,7 @@ public class VoteService {
     @Autowired
     private OibMockService oibMockService;
 
-    public String saveVote(String string) throws Exception {
+    public String saveVote(String string)  {
         String[] array = string.split("\\.");
         Vote vote = new Vote(array[0], array[1], Instant.now());
         vote.setVoterOib(AesUtil.encrypt("AES", vote.getVoterOib(), aesKey));

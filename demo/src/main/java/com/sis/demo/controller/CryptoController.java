@@ -28,7 +28,7 @@ public class CryptoController {
     private VoteService voteService;
 
     @PostMapping("/submit")
-    public String receiveData(@RequestBody CryptoRequest request) throws Exception {
+    public String receiveData(@RequestBody CryptoRequest request)  {
         String encryptedData = request.getEncryptedData();
         String signature = request.getSignature();
 
