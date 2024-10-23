@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class FirebaseConfig {
     public FirebaseApp initializeFirebase() throws IOException {
         FileInputStream serviceAccount =
                 new FileInputStream("src/main/resources/sisdb-e2c4e-firebase-adminsdk-flay2-25e36b02c7.json");
+
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .build();
@@ -27,18 +29,22 @@ public class FirebaseConfig {
             System.out.println("FirebaseApp je inicijalizovan.");
             return FirebaseApp.initializeApp(options);
         } else {
+            System.out.println("FirebaseApp je već inicijalizovan.");
             return FirebaseApp.getInstance();
         }
     }
 
     @Bean
     public FirebaseAuth firebaseAuth(FirebaseApp firebaseApp) {
-        System.out.println("AuthController je inicijalizovan.");
+        System.out.println("FirebaseAuth je inicijalizovan.");
         return FirebaseAuth.getInstance(firebaseApp);
     }
-    @Bean
-    public Firestore firestore() {
-        return FirestoreClient.getFirestore();
-    }
 
+    @Bean
+    @DependsOn("initializeFirebase")
+    public Firestore firestore() {
+        Firestore firestore = FirestoreClient.getFirestore();
+        System.out.println("Firestore je inicijalizovan: " + (firestore != null));
+        return firestore;
+    }
 }
