@@ -18,7 +18,7 @@ public class OibMockService {
     }
 
     public boolean checkOibExistence(String oib) {
-        CollectionReference oibRef = firestore.collection("candidates");
+        CollectionReference oibRef = firestore.collection("oibMockDB");
 
         try {
             ApiFuture<QuerySnapshot> query = oibRef.get();
@@ -37,7 +37,7 @@ public class OibMockService {
     }
 
     public void setOibVoted(String oib) {
-        CollectionReference candidatesRef = firestore.collection("candidates");
+        CollectionReference candidatesRef = firestore.collection("oibMockDB");
 
         try {
             ApiFuture<QuerySnapshot> query = candidatesRef.whereEqualTo("oib", oib).get();
