@@ -18,8 +18,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/auth/register", "/auth/login",  "/api/candidates").permitAll()
-                        .requestMatchers("/api/test").authenticated()
+                        .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        .requestMatchers("/api/test", "/api/crypto/**", "/api/oib/**", "/api/candidates/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

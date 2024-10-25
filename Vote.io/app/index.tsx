@@ -18,6 +18,8 @@ export default function Index() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
+      console.log(idToken);
+      
 
       const response = await fetch(LOGIN_API , {
         method: 'POST',

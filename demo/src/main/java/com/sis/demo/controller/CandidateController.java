@@ -16,7 +16,7 @@ public class CandidateController {
     private CandidateService candidateService;
 
 
-    @GetMapping
+    @GetMapping("/")
     public List<Candidate> getCandidates() {
         return candidateService.getAllCandidates();
     }

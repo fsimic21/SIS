@@ -3,6 +3,8 @@ package com.sis.demo.util;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.sis.demo.model.RequestLog;
+import com.sis.demo.service.RequestLogService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -22,16 +25,26 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    RequestLogService requestLogService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         String requestPath = request.getServletPath();
+        RequestLog log = new RequestLog();
+        log.setPath(requestPath);
+        log.setTimestamp(Instant.now());
+        log.setRequestType(request.getMethod());
 
         if (
-                requestPath.equals("/auth/login") || requestPath.equals("/auth/register") || requestPath.equals("/api/candidates")
+                requestPath.equals("/auth/login") || requestPath.equals("/auth/register")
         ) {
+            log.setEmail("Ne autoriziran");
+            requestLogService.addRequestLog(log);
             chain.doFilter(request, response);
+            log.setResponse(response.getStatus());
             return;
         }
 
@@ -49,7 +62,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 System.out.println("Greška prilikom vađenja korisničkog imena iz JWT-a: " + e.getMessage());
             }
         }
-
+        log.setEmail(username);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             if (jwtUtil.validateToken(jwtToken, username)) {
@@ -59,10 +72,15 @@ public class JwtFilter extends OncePerRequestFilter {
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Nevalidan JWT token.");
+                log.setResponse(response.getStatus());
+                requestLogService.addRequestLog(log);
                 return;
             }
         }
+
         chain.doFilter(request, response);
+        log.setResponse(response.getStatus());
+        requestLogService.addRequestLog(log);
     }
 }
 

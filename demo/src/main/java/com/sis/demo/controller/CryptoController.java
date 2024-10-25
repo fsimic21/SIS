@@ -15,7 +15,7 @@ import java.security.PublicKey;
 import java.util.Arrays;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/crypto")
 public class CryptoController {
 
     @Autowired
@@ -27,8 +27,8 @@ public class CryptoController {
     @Autowired
     private VoteService voteService;
 
-    @PostMapping("/submit-data")
-    public String receiveData(@RequestBody CryptoRequest request) throws Exception {
+    @PostMapping("/submit")
+    public String receiveData(@RequestBody CryptoRequest request)  {
         String encryptedData = request.getEncryptedData();
         String signature = request.getSignature();
 
