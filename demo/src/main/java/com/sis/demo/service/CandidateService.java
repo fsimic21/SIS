@@ -1,14 +1,11 @@
 package com.sis.demo.service;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.sis.demo.model.Candidate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.google.cloud.firestore.WriteResult;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,4 +35,27 @@ public class CandidateService {
         }
         return candidates;
     }
+    public String incrementVotes(String id) {
+        try {
+            CollectionReference candidatesRef = firestore.collection("candidates");
+            DocumentReference candidateRef = candidatesRef.document(id);
+            DocumentSnapshot candidateSnapshot = candidateRef.get().get();
+
+            if (candidateSnapshot.exists()) {
+                Candidate candidate = candidateSnapshot.toObject(Candidate.class);
+                int currentVotes = candidate.getVotes();
+
+                candidate.setVotes(currentVotes + 1);
+
+                WriteResult writeResult = candidateRef.set(candidate).get();
+                return "Votes updated successfully: " + writeResult.getUpdateTime();
+            } else {
+                return "Candidate not found!";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error updating votes: " + e.getMessage();
+        }
+    }
+
 }
