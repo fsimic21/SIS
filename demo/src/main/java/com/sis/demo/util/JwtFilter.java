@@ -49,7 +49,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwtToken = null;
 

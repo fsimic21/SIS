@@ -6,6 +6,7 @@ import {auth} from '../firebaseConfig'
 import React from "react";
 import { LOGIN_API } from "@/constants/API_constants";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
   const [email, setEmail] = useState('');
@@ -18,9 +19,6 @@ export default function Index() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
-      console.log(idToken);
-      
-
       const response = await fetch(LOGIN_API , {
         method: 'POST',
         headers: {
@@ -30,8 +28,11 @@ export default function Index() {
           idToken: idToken,
         }),
       });
-
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
+      await AsyncStorage.setItem('jwtToken', data.jwt); 
       router.replace("/homeScreen");
 
     } catch (error: unknown) {

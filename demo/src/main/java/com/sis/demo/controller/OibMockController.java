@@ -17,6 +17,7 @@ public class OibMockController {
 
      @PostMapping("/check")
     public ResponseEntity<Boolean> checkOib(@RequestBody OibDto oibDto){
+         System.out.println(oibDto.g);
          try{
             return ResponseEntity.ok(service.checkOibExistence(oibDto.getOib()));
          } catch (Exception e) {
