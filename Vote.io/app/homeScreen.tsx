@@ -1,9 +1,9 @@
 import { Text, View, ActivityIndicator, Button, Alert, TextInput, Modal } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
-import { RSA } from 'react-native-rsa-native';
 import { getCandidates, submitCandidate, validateOIB } from '@/constants/API_constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RSA } from 'react-native-rsa-native';
 
 type Candidate = {
   id: string;
@@ -79,8 +79,13 @@ export default function HomeScreen() {
             Alert.alert("Invalid OIB", "The OIB does not exist in our records.");
             return;
         }
-
         const message = `${oib}.${selectedCandidate}`;
+        
+        console.log("Private Key:", PRIVATE_KEY);
+        console.log("Public Key:", PUBLIC_KEY);
+        console.log(`poruka : ${message}`)
+        console.log("RSA Object:", RSA);
+        
         const signedMessage = await RSA.sign(message, PRIVATE_KEY);
         const encryptedMessage = await RSA.encrypt(message, PUBLIC_KEY);
 
