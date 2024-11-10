@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { getCandidates, submitCandidate, validateOIB } from '@/constants/API_constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RSA } from 'react-native-rsa-native';
+import forge from 'node-forge';
 
 type Candidate = {
   id: string;
@@ -22,8 +22,7 @@ export default function HomeScreen() {
 
   const fetchCandidates = async () => {
     const jwtToken = await AsyncStorage.getItem('jwtToken') || '';
-
-    console.log("Ovo je jwt token", jwtToken)
+    console.log("JWT token:", jwtToken);
     try {
       const response = await fetch(getCandidates, {
         method: "GET",
@@ -32,72 +31,106 @@ export default function HomeScreen() {
           "Authorization": "Bearer " + jwtToken || '',
         },
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
-      }  
+      }
       const data: Candidate[] = await response.json();
       setCandidates(data);
     } catch (error) {
-      console.error("Error during fetch", error);
+      console.error("Error during fetch:", error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
-  
 
-  const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApEFp54cXiJUJcF6t5UkNPV2H0/njWUqr2SD52yz4U6grzXwUCGhPClxyTTz0tImM+5u2MO81MLinbbEQXLErdnabMI8Fd82iATpRS+/oKcpOmI3wBrj/KneMIMa+csbM3Zm6F+zt8ML+ZAX6EFSouHn1bUcJCfAbh3Kur6sf/0U6KTqNrjwymiMXrnX5MwncVO7gPY7Er+4WMmJnaut3oV70G/nQBwCRaVC78F+drvXN3frQe+TkADJXoitygowaOG59vSqodRvesbv8cFA/4jF8ydIWux3Hi+tvBNuslk3oOvi4boTz9XfznhlHpgzmU1kzLMUs5ZfeHZ8QTOC3NwIDAQAB-----END PUBLIC KEY-----`;
-
-  const PRIVATE_KEY = `-----BEGIN RSA PRIVATE KEY-----MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDR1Xkt3UcWzqOkTWxW8L5Uy2YMPR6MA7JLs+Scfc6Rr3bYjFAZ7Y50JThKtAKpgODhd8hKxXAwhWcew66DOv+LkZWa15MpIUaDRpkXLyj0MphXrrq9lsAXnoW3NDgh5ttuPxBZrLuO55cq5YLxdwRL3KWHNNzGW01+pITVi5L87cBYNLHGBcffRy+O3cTsgQxCkNUwifS9dMbFqfYsdInoaLPTdshOFMVvt9irAjfG9xrA+kB1Lo9zkjFG2MOxB5TfJP9zdvvXPWxyohrYrRWqROWK30QhzCk1jrrP9H1oQxzQSb4CjSUep8e7iUVfNUAZCp7LPGl9aJ8918gL6szhAgMBAAECggEAA0JWJRV5BMcVs8KvwljvvTLsj+zvbsbMQTtB0NbDu4UMFZh2Ul9wypKHwYydYaMauxMdyrWEL34USDN2Ctvte1jknTiodJIrqB8pAmXCidUdrcz3tw6inKtNvIxPK+L2o7Yki56wdMDZmvpgx93XSf4FxH1tyWyXyKCxtHxmvnlurf9ZyTOfSgBKk4162xvOrAXGNOEro6V9rH9bzk+SP4DVDnrmb9yNjztJdSa0tJ4nqDQ+xCZxnefVveNntuhRj6oO308zsBZEGgUhoaXenA1Ymzgb2+pEUHOZ34v+/SY//ewZAQuHaq6zfKllGlD1E1or8Pov6J8noD7StF1z/QKBgQDtH3TVaXMGySzR5kVAi0FDIUPvx8FiRxOm91r1WvwRVAzuzsU1MwzrpnUuqc10xQGLr+MIDLjxXtCtg1kSeMfnRJra70/eyn5OM/vBZT6Z4PwdHxkLDeFMClg3q7Cpld9vjTh5SKBkS8M96Kxe7F0vEbXbDHXYIxzHUjms2oHUbQKBgQDiid6eVY31DT0S0MH+pYfaG1dGh/qNRN19yKRPIxHDRoWWHraVXbiWSxHpFRiL7tFhHufSORV1azgZWLPfVQlXo5A7b32bb84OOU9QuZ5+/dY1XUe+YnTrHRvQav0V8vtKzPftkZKaKpJXTtD4tnBaOCnfunfLhFJcpohNPCSJxQKBgEJfE6zIn1G+7bSy559xWwsXPJTZLN/9VRrfEa6rkPKovBX7+mcxquQq65HsJX4RxqT6zmlqZjnpeC+ZHE13UT0CjvXJFmod88yf8E/pruQTfX4JPlFByVYnbxnmDMTrFmd699u64GoyaqvhfJ31Ov/5zRVLH5EoAt4nvc0MPFrhAoGAQUL2nyaGftIRhhodyP5m5K57thX2WDw+kr36l9HCjD8EvPqcHuuhAasevccWCzoBl7kPj8BiLjF1N9gV+YDF8Dluk7DKvry23+Iit17CClOWIkl9IZu7kwAPwzsPLgOR4TqrMgV99mvNPNm32e6070i+x3UwjbDRCV/wZE+vNwECgYAWkEhP9MIp0UyaxAi2KHZfynCFwSJuxrYa/T/CYNwiKq3AcMUwe6L82RnGQUF1dFolBv1klz9HUj+YQKChLm8BxAvJcXxWEdEjRYs1xgPAcYnmf0vFrpMd0hMvC5AkvOxIdWIHV0d88FFgiGDjcG7NFnKswZiW+JO5WnzWoTpgGw==-----END RSA PRIVATE KEY-----`;
-
+  const PRIVATE_KEY = `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA9ZWFZPwbKYnfEAOYLEUJq2isMyRi2C1Ob5Sc+IetI/RM1Zam
+1BjUdgBtAfkGrdJgFNA/qbCIZWjZTgaIzDu9AtUd7zPD732iqMOoCOkqyfhwn9+7
+WCEZ/GqR0MZ8vEHre1d6ApdIsiTw4X0D89Tlj++Kjm0zJKDlSy5QC49+IRetJPrT
+h5pUOBpDHaB6MpcdmagiAUFkflstuvujSPWycPXr8B29W+vQU0Dd0BI1iyUAoQcN
+mOHnINW1dTmI8HeUpEuarpIAAEteS4+jc+1I11WkIGT333p120RO0LyEXEpkZRHA
+5c0pOOngk3q2/2/D3pXEcbIgs5VWR+fc5lml+wIDAQABAoIBAHaelQL0/o2uyW5r
+vgnMAuKnOV2ueovePl+I0dT9e7S9IIueK9CQebbRd9WXGhHFZqFHASkOWqNY5HVa
+lKLJS/9dPws13rMD5RhNARHkxcUuWf/uygfEXU/djbbg2Ij58iruUsGDnxpk23Ce
+uNUChStj0XH/7s8HZBlPMlyTH6INYlxw7RAJBlENVq8zJ2iEUwx+WGOFxLsa4cF/
+V3RN7Lvtn//OVAJyuSKsVrYxC9GGFkpFVAW/hw27IKRxgiSso3v/nqmAY5PwjcNz
+er74trpuCJZ9Q4WbBqyGI/kilGByLsGdS7OZVnefVN3nMumuzfkrL86dn7eI8cje
++Gzs+2kCgYEA+2h5XRgfCv42UQ58Ubkxpat6s4e35WIAJmF3zvnHT1N/CZqRQvdA
+Tokz5AceNTI9i1JZsKpSrlXZ8GLTEDBXz8e9Sgg5pFJTFexZv4LVtLSLwqvFv0IE
+Ex0xsmn4aX3PfuWmqTF0BhL67cKCgdJyTjI7RArKvoOdLoQcwP0B/W8CgYEA+hHQ
+rkDqMvH/gkHp90IbPVs40brbJp0ZQ8pOY7r6+gHPtuLk3U85kedhDAqjpZ7d/2rf
+Snv//cEbiIS6SFbOb1F0lZeT2Ms4XCMQaar7BGKKtiT48LqnG9iAzY+stnEvbNi5
+iSkYNGgUhINhalup3XsLbNtZCcj3Lqoosx5XsjUCgYBDiuroJt3YLznahwDBV/bN
+oodBilnOh4iwxwjQE20Hk9ASfXM/QXwGXXgScBMeiZPdRU+RVgEGk0wM+A/qToKY
+8Pma1SDfU7q8rhXijLzrYoIV1941pv+/Pt2mKDAz7zf6yKoA1KduJlVB4Tr8s9Q/
+y+D+Q8P6cROedqHe+1o4gwKBgQCIkVglAgClB/JhYbvzs9+Kd5olN+XdRah5lC+R
+WZkdFgYpO+p/TngDTZh7aggLOCLHDceaNvQL0f1GZi4RuY6Nzq9bzucIW5uQ/flF
+rAHgWCym4rQtS9Jda7SUDqXlERU0XXueA5pbbIfgApwd6Kdw9HS942DR7jXH/1ew
+0p5UDQKBgBqA4+LVwe/W0BrZqiX5LJfefWI6VAvUQDgGZNQDytQXX3GPryQkBCm5
+atyH63phDa1KaefqLVpsW9vsr2/H6iIZmVLpTHeLmenLQ3FtfVMwOpMhNGd2/bnS
+XG34u1co7mq8ghkU7PaOrEnIJCc5877qML5q0MY+MKCitEC/I/T/
+-----END RSA PRIVATE KEY-----`
+  const PUBLIC_KEY=`-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAprDsVD7DwZmGArR1y8H3
+TS9/ZCtITooi3EbxfMkHOoElPSW7NeQMB5ZAmT8LyeFuoLx6BMFMnLnMbYW/S58V
+qcA4e7JTdP30EMmMlta5vUbTZDqOWB+4uDtKmG08YGZulgC/DoeyBXQrc40Ov8PP
+jBN2AcDCSEBRw7gR6guczmo9EIC2srKka/cgOswQX76JziDbiGU/WHaYmAjG7kV3
+bA8DpDyKjTuwdcCraddYnRKtlklnyyPFSzhAi3uZidGhOttasxk9MsXblQwcC7lz
+COMEBGJylIJLvJ7jFfjdYhZ49tsZVB7eqZcEzPPkrcnVBlI61AB3ezIyF5sN59O8
+MQIDAQAB
+-----END PUBLIC KEY-----`
   const handleOIBSubmit = async () => {
     if (oib.length !== 11) {
-        setError("OIB must be 11 characters.");
-        return;
+      setError("OIB must be 11 characters.");
+      return;
     }
 
     const jwtToken = await AsyncStorage.getItem('jwtToken') || '';
     try {
-        const response = await fetch(validateOIB, {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json", 
-              "Authorization": "Bearer " + jwtToken || '',
-            },
-            body: JSON.stringify({
-              oib
-            }),
-        });
+      const response = await fetch(validateOIB, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + jwtToken || '',
+        },
+        body: JSON.stringify({ oib }),
+      });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const exists = await response.json();
+      const exists = await response.json();
 
-        if (!exists) {
-            Alert.alert("Invalid OIB", "The OIB does not exist in our records.");
-            return;
-        }
-        const message = `${oib}.${selectedCandidate}`;
-        
-        console.log("Private Key:", PRIVATE_KEY);
-        console.log("Public Key:", PUBLIC_KEY);
-        console.log(`poruka : ${message}`)
-        console.log("RSA Object:", RSA);
-        
-        const signedMessage = await RSA.sign(message, PRIVATE_KEY);
-        const encryptedMessage = await RSA.encrypt(message, PUBLIC_KEY);
+      if (!exists) {
+        Alert.alert("Invalid OIB", "The OIB does not exist in our records.");
+        return;
+      }
+      const message = `${oib}.${selectedCandidate}`;
 
-        await submitCandidateToBackend(signedMessage, encryptedMessage);
-        setShowOIBModal(false);
+const privateKey = forge.pki.privateKeyFromPem(PRIVATE_KEY);
+const publicKey = forge.pki.publicKeyFromPem(PUBLIC_KEY);
 
+const md = forge.md.sha256.create();
+md.update(message, 'utf8');
+const signedMessage = forge.util.encode64(privateKey.sign(md));
+
+const encryptedMessage = forge.util.encode64(publicKey.encrypt(message, 'RSA-OAEP', {
+    md: forge.md.sha256.create(), 
+    mgf1: { md: forge.md.sha1.create() }  
+}));
+
+console.log("Encrypted Message:", encryptedMessage);
+console.log("Signed Message:", signedMessage);
+
+await submitCandidateToBackend(signedMessage, encryptedMessage);
+setShowOIBModal(false);
     } catch (error) {
-        console.error("Error during OIB validation:", error);
-        Alert.alert("Error", "An error occurred while validating OIB."); 
+      console.error("Error during OIB validation:", error);
+      Alert.alert("Error", "An error occurred while validating OIB.");
     }
-};
-
+  };
 
   const submitCandidateToBackend = async (signedMessage: string, encryptedMessage: string) => {
     const jwtToken = await AsyncStorage.getItem('jwtToken') || '';
@@ -107,10 +140,12 @@ export default function HomeScreen() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": jwtToken || '',
+          "Authorization": "Bearer " + jwtToken || '',
         },
-        body: JSON.stringify({ signedMessage, encryptedMessage }),
-      });
+        body: JSON.stringify({
+          encryptedData: encryptedMessage,  
+          signature: signedMessage         
+      }),      });
 
       if (response.ok) {
         Alert.alert("Success", "Candidate selection submitted successfully.");
@@ -133,7 +168,7 @@ export default function HomeScreen() {
   return (
     <View>
       <Text>Select a candidate:</Text>
-      
+
       <Picker
         selectedValue={selectedCandidate}
         onValueChange={(itemValue) => setSelectedCandidate(itemValue)}

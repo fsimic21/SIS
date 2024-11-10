@@ -12,8 +12,9 @@ import javax.crypto.Cipher;
 public class CryptoUtil {
 
     public static byte[] decryptData(String encryptedData, PrivateKey privateKey)  {
+
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             return cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         } catch (Exception e) {
