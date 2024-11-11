@@ -2,9 +2,9 @@ import { Button, Text, View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { signInWithEmailAndPassword} from 'firebase/auth'
 import { useState } from "react";
-import {auth} from '../firebaseConfig'
+import {auth} from '../config/firebaseConfig'
 import React from "react";
-import { LOGIN_API } from "@/constants/API_constants";
+import { LOGIN_API } from "@/config/API_constants";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
