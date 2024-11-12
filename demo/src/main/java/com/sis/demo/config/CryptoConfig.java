@@ -38,18 +38,20 @@ public class CryptoConfig {
 
         byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
 
-        RSAPrivateKeySpec keySpec = parseRSAPrivateKey(encoded);
-
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePrivate(keySpec);
     }
 
     private RSAPrivateKeySpec parseRSAPrivateKey(byte[] encoded) throws Exception {
-        BigInteger modulus = new BigInteger(1, Arrays.copyOfRange(encoded, 0, 256));
-        BigInteger privateExponent = new BigInteger(1, Arrays.copyOfRange(encoded, 256, encoded.length));
+        int modulusLength = (encoded.length - 4) / 2;
+
+        BigInteger modulus = new BigInteger(1, Arrays.copyOfRange(encoded, 0, modulusLength));
+        BigInteger privateExponent = new BigInteger(1, Arrays.copyOfRange(encoded, modulusLength, encoded.length));
 
         return new RSAPrivateKeySpec(modulus, privateExponent);
     }
+
 
     @Bean
     public PublicKey frontendPublicKey() throws Exception {

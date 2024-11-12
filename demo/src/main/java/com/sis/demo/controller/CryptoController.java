@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -33,13 +34,12 @@ public class CryptoController {
         String signature = request.getSignature();
 
         byte[] decryptedData = CryptoUtil.decryptData(encryptedData, privateKey);
-
-        boolean isValidSignature = CryptoUtil.verifySignature(encryptedData, signature, frontendPublicKey);
-
+        boolean isValidSignature = CryptoUtil.verifySignature(decryptedData, signature, frontendPublicKey);
+        String realData = new String(decryptedData, StandardCharsets.UTF_8);
         if (!isValidSignature) {
             return "Invalid signature!";
         }
-        voteService.saveVote(Arrays.toString(decryptedData));
+        voteService.saveVote(realData);
         return "Data is valid and decrypted: " + new String(decryptedData);
     }
 }

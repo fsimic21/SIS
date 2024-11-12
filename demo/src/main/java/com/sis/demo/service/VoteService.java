@@ -30,8 +30,8 @@ public class VoteService {
     public String saveVote(String string)  {
         String[] array = string.split("\\.");
         Vote vote = new Vote(array[0], array[1], Instant.now());
-        vote.setVoterOib(AesUtil.encrypt("AES", vote.getVoterOib(), aesKey));
-        vote.setCandidateId(AesUtil.encrypt("AES", vote.getCandidateId(), aesKey));
+        vote.setVoterOib(AesUtil.encrypt(vote.getVoterOib(), aesKey));
+        vote.setCandidateId(AesUtil.encrypt(vote.getCandidateId(), aesKey));
 
         CollectionReference votesCollection = firestore.collection("votes");
         oibMockService.setOibVoted(array[0]);

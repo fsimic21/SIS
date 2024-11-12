@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, ActivityIndicator, Button, Alert, Modal, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { fetchCandidates, validateOIBAndSubmitCandidate } from '@/services/candidateService';
+import { fetchCandidates, SubmitCandidate, validateOIBAndSubmitCandidate } from '@/services/candidateService';
 import { Candidate } from '@/constants/candidate';
 import OIBModal from '@/components/OIBmodal';
+import { validateOIB } from '@/services/oibService';
+import { submitCandidate } from '@/config/API_constants';
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState('');
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate>();
   const [showOIBModal, setShowOIBModal] = useState(false);
 
   useEffect(() => {
@@ -21,7 +23,14 @@ export default function HomeScreen() {
   }, []);
 
   const handleOIBSubmit = async (oib: string) => {
-    const success = await validateOIBAndSubmitCandidate(oib, selectedCandidate);
+    try{
+      await validateOIB(oib);
+      Alert.alert("Success", "OIB is available.");
+    }catch(e){
+      Alert.alert("Error", "Error while fetching oib.");
+    }
+
+    const success = await SubmitCandidate(oib, selectedCandidate);
     setShowOIBModal(false);
     if (success) {
       Alert.alert("Success", "Candidate selection submitted successfully.");
@@ -44,6 +53,7 @@ export default function HomeScreen() {
           <Picker.Item key={candidate.id} label={`${candidate.name} ${candidate.surname}`} value={candidate.id} />
         ))}
       </Picker>
+
       <Button title="Submit" onPress={() => setShowOIBModal(true)} />
       {showOIBModal && (
         <OIBModal

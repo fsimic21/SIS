@@ -21,7 +21,7 @@ public class OibMockController {
             return ResponseEntity.ok(service.checkOibExistence(oibDto.getOib()));
          } catch (Exception e) {
              System.out.println(e);
-             return ResponseEntity.ok(true);
+             return ResponseEntity.ok(false);
          }
      }
 }

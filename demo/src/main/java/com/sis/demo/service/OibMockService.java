@@ -27,12 +27,14 @@ public class OibMockService {
             for (QueryDocumentSnapshot document : documents) {
                 String existingOib = document.getString("oib");
                 if (existingOib != null && existingOib.equals(oib)) {
+                    System.out.println("Oib postoji");
                     return true;
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
+        System.out.println("Oib ne postoji");
         return false;
     }
 

@@ -11,28 +11,41 @@ import javax.crypto.Cipher;
 @Component
 public class CryptoUtil {
 
-    public static byte[] decryptData(String encryptedData, PrivateKey privateKey)  {
-
+    public static byte[] decryptData(String encryptedData, PrivateKey privateKey) {
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+            byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            return cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+
+            return cipher.doFinal(encryptedBytes);
+
         } catch (Exception e) {
-            System.out.println("Greška prilikom dekriptiranja: " + e);
+            System.out.println("Error during decryption: " + e);
             return null;
         }
     }
 
-    public static boolean verifySignature(String data, String signature, PublicKey publicKey)  {
-        try{
+
+
+    public static boolean verifySignature(byte[] data, String signature, PublicKey publicKey)  {
+        System.out.println("data "+data);
+        System.out.println("signature: "+signature);
+        System.out.println("public key"+publicKey);
+        try {
+            if (data == null || signature == null || publicKey == null) {
+                throw new IllegalArgumentException("Data, signature, or public key is null");
+            }
+
+            byte[] signatureBytes = Base64.getDecoder().decode(signature);
+
             Signature sig = Signature.getInstance("SHA256withRSA");
             sig.initVerify(publicKey);
-            sig.update(data.getBytes());
-            return sig.verify(Base64.getDecoder().decode(signature));
-        }catch (Exception e) {
+            sig.update(data);
+            return sig.verify(signatureBytes);
+        } catch (Exception e) {
             System.out.println("Greška prilikom provjere potpisa: " + e);
             return false;
         }
-
     }
+
 }
