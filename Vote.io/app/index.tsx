@@ -2,23 +2,23 @@ import { Button, Text, View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
 import { signInWithEmailAndPassword} from 'firebase/auth'
 import { useState } from "react";
-import {auth} from '../firebaseConfig'
+import {auth} from '../config/firebaseConfig'
 import React from "react";
-import { LOGIN_API } from "@/constants/API_constants";
+import { LOGIN_API } from "@/config/API_constants";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const router = useRouter();
   const login = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
-      console.log(idToken);
-      
-
       const response = await fetch(LOGIN_API , {
         method: 'POST',
         headers: {
@@ -28,12 +28,18 @@ export default function Index() {
           idToken: idToken,
         }),
       });
-
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      console.log('Backend response:', data);
+      await AsyncStorage.setItem('jwtToken', data.jwt); 
+      router.replace("/homeScreen");
 
-    } catch (error) {
-      console.error('Error during login:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error during login:', error.message); 
+        setError(error.message);
+      }
     }
   };
   return (

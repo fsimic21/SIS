@@ -5,8 +5,9 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
-    }
+      ],
+    },
+    "types": ["react", "react-test-renderer", "jest", "prop-types"] // Add this line
   },
   "include": [
     "**/*.ts",

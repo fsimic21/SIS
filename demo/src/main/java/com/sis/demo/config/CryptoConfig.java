@@ -7,11 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 
 @Configuration
@@ -28,28 +31,41 @@ public class CryptoConfig {
 
     @Bean
     public PrivateKey privateKey() throws Exception {
-
         String privateKeyPEM = privateKeyPem
                 .replace("-----BEGIN RSA PRIVATE KEY-----", "")
                 .replace("-----END RSA PRIVATE KEY-----", "")
                 .replaceAll("\\s", "");
+
         byte[] encoded = Base64.getDecoder().decode(privateKeyPEM);
+
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePrivate(keySpec);
     }
 
+    private RSAPrivateKeySpec parseRSAPrivateKey(byte[] encoded) throws Exception {
+        int modulusLength = (encoded.length - 4) / 2;
+
+        BigInteger modulus = new BigInteger(1, Arrays.copyOfRange(encoded, 0, modulusLength));
+        BigInteger privateExponent = new BigInteger(1, Arrays.copyOfRange(encoded, modulusLength, encoded.length));
+
+        return new RSAPrivateKeySpec(modulus, privateExponent);
+    }
+
+
     @Bean
     public PublicKey frontendPublicKey() throws Exception {
         String publicKeyPEM = frontendPublicKeyPem
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "")
+                .replace("-----BEGIN RSA PUBLIC KEY-----", "")
+                .replace("-----END RSA PUBLIC KEY-----", "")
                 .replaceAll("\\s", "");
         byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         return keyFactory.generatePublic(keySpec);
     }
+
+
 
     @Bean
     public SecretKey aesKey() {

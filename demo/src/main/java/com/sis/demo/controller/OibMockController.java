@@ -15,13 +15,22 @@ public class OibMockController {
     @Autowired
     OibMockService service;
 
-     @PostMapping("/check")
+    @PostMapping("/check")
     public ResponseEntity<Boolean> checkOib(@RequestBody OibDto oibDto){
          try{
             return ResponseEntity.ok(service.checkOibExistence(oibDto.getOib()));
          } catch (Exception e) {
              System.out.println(e);
-             return ResponseEntity.ok(true);
+             return ResponseEntity.ok(false);
          }
      }
+    @PostMapping("/checkStatus")
+    public ResponseEntity<Boolean> checkOibStatus(@RequestBody OibDto oibDto){
+        try{
+            return ResponseEntity.ok(service.checkOibVoted(oibDto.getOib()));
+        } catch (Exception e) {
+            System.out.println(e);
+            return ResponseEntity.ok(false);
+        }
+    }
 }

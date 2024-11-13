@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -14,13 +15,12 @@ import java.util.Base64;
 public class AesUtil {
 
 
-    public static String encrypt(String algorithm, String input, SecretKey key) {
+    public static String encrypt( String input, SecretKey key) {
         try{
-            Cipher cipher = Cipher.getInstance(algorithm);
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, key);
-            byte[] cipherText = cipher.doFinal(input.getBytes());
-            return Base64.getEncoder()
-                    .encodeToString(cipherText);
+            byte[] encryptedTextBytes = cipher.doFinal(input.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedTextBytes);
         } catch (Exception e) {
             System.out.println("Greška prilikom aes kriptiranja: "+ e);
             return null;
