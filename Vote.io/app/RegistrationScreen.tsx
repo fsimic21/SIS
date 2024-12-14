@@ -41,7 +41,7 @@ export default function RegistrationScreen(){
           onChangeText={(text) => setRepeatedPassword(text)}
         />
   
-        <Button title="Login" onPress={login} />
+        <Button title="Register" onPress={()=>{}} />
       </View>
       );
 }
