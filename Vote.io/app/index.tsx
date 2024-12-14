@@ -66,7 +66,9 @@ export default function Index() {
         value={password}
         onChangeText={(text) => setPassword(text)}
       />
-
+      <Button title="Registration" onPress={()=>{
+          router.replace("/RegistrationScreen");
+      }}/>
       <Button title="Login" onPress={login} />
     </View>
   );
