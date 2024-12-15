@@ -7,15 +7,15 @@ const RegisterScreen = () => {
   const [responseMessage, setResponseMessage] = useState('');
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
 
-  // Generate secret key
+
   const handleGenerateKey = async () => {
-    setIsGeneratingKey(true);  // Show loading indicator if the secret key is being generated
+    setIsGeneratingKey(true);  
     try {
       const response = await fetch(`${GENERATE_GAUTH_KEY}/${email}`);
 
       const result = await response.text();
       if (response.ok) {
-        setResponseMessage(result);  // Assuming the result contains a 'secret' field
+        setResponseMessage(result); 
       } else {
         setResponseMessage('Error generating secret key');
       }
@@ -28,7 +28,7 @@ const RegisterScreen = () => {
 
   // Register user
   const handleRegister = async () => {
-    setResponseMessage(''); // Reset message before starting the request
+    setResponseMessage(''); 
     try {
       const response = await fetch(REGISTRATION_API, {
         method: 'POST',
@@ -42,7 +42,7 @@ const RegisterScreen = () => {
       });
 
       if (response.ok) {
-        handleGenerateKey();  // Call the generate key after registration is successful
+        handleGenerateKey(); 
       } else {
         setResponseMessage('Registration failed');
       }
@@ -82,7 +82,6 @@ const RegisterScreen = () => {
                   style={[styles.input, { backgroundColor: '#f0f0f0' }]}
                   value={responseMessage}
                   editable={true}
-                    // Prevent editing of the secret code
                 />
               </>
             )}
