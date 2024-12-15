@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { GENERATE_GAUTH_KEY , REGISTRATION_API} from '@/config/API_constants';
+import {  useRouter } from 'expo-router';
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [repassword, setrePassword] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
-
+  const router = useRouter();
 
   const handleGenerateKey = async () => {
     setIsGeneratingKey(true);  
@@ -28,6 +30,10 @@ const RegisterScreen = () => {
 
   // Register user
   const handleRegister = async () => {
+    if(password !== repassword){
+      setResponseMessage('Passwords do not match');
+      return;
+    }
     setResponseMessage(''); 
     try {
       const response = await fetch(REGISTRATION_API, {
@@ -66,6 +72,13 @@ const RegisterScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={repassword}
+        onChangeText={setrePassword}
+      />
       <Button title="Register" onPress={handleRegister} />
       
       {isGeneratingKey ? (
@@ -83,6 +96,9 @@ const RegisterScreen = () => {
                   value={responseMessage}
                   editable={true}
                 />
+                <Button title='Login' onPress={()=>{
+                  router.replace("/");
+                }}/>
               </>
             )}
           </View>
