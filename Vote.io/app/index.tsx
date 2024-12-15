@@ -7,7 +7,6 @@ import React from "react";
 import { LOGIN_API } from "@/config/API_constants";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
