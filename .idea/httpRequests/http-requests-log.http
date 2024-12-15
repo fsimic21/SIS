@@ -1,0 +1,8 @@
+GET http://localhost:8080/auth/generate-secret/gma
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2024.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+

@@ -1,5 +1,7 @@
+
 {
   "expo": {
+    "newArchEnabled": true,
     "name": "Vote.io",
     "slug": "Vote.io",
     "version": "1.0.0",
