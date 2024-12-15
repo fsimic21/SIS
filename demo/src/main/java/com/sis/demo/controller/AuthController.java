@@ -39,10 +39,10 @@ public class AuthController {
     }
 
 
-    @PostMapping("/verify/{username}/{code}")
-    public ResponseEntity<Boolean> verifyCode(@PathVariable String username, @PathVariable int code) {
-        String secretKey = googleAuthService.generateSecretKey(username);
-        boolean isVerified = googleAuthService.validateCode(secretKey, code);
+    @PostMapping("/verify/{email}/{code}")
+    public ResponseEntity<Boolean> verifyCode(@PathVariable String email, @PathVariable String code) {
+        String secretKey = googleAuthService.generateSecretKey(email);
+        boolean isVerified = googleAuthService.validateCode(secretKey, Integer.parseInt(code));
         if (isVerified) {
            return ResponseEntity.ok(true);
         }else{

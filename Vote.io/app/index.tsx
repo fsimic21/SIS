@@ -4,15 +4,40 @@ import { signInWithEmailAndPassword} from 'firebase/auth'
 import { useState } from "react";
 import {auth} from '../config/firebaseConfig'
 import React from "react";
-import { LOGIN_API } from "@/config/API_constants";
+import { LOGIN_API, VERIFY_GAUTH } from "@/config/API_constants";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
+  const [isTFAVisible,setTFAVisible] = useState(false)
+  const [code,setCode] = useState('')
   const router = useRouter();
+  const handleTFA = async () => {
+      try {
+        const response = await fetch(VERIFY_GAUTH + `/${email}` + `/${code}`, {
+          method: 'POST',
+          mode: 'cors',
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+      if (data === true) {
+        await AsyncStorage.setItem('isLoggedIn', 'true');
+        router.replace("/homeScreen");
+      } else {
+        setError('Invalid two-factor authentication code.');
+      }
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('Error during login:', error.message); 
+          setError(error.message);
+        }
+        
+      }
+  }
   const login = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -32,7 +57,7 @@ export default function Index() {
       }
       const data = await response.json();
       await AsyncStorage.setItem('jwtToken', data.jwt); 
-      router.replace("/homeScreen");
+      setTFAVisible(true);
 
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -69,6 +94,15 @@ export default function Index() {
           router.replace("/RegistrationScreen");
       }}/>
       <Button title="Login" onPress={login} />
+      {isTFAVisible ? <>
+        <TextInput
+        style={{ borderWidth: 1, width: 200, marginBottom: 10, padding: 8 }}
+        placeholder="Password"
+        value={code}
+        onChangeText={(text) => setCode(text)}
+      />
+      <Button title="Submit" onPress={handleTFA}/>
+      </>: <></>}
     </View>
   );
 }

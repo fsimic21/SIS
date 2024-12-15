@@ -6,3 +6,4 @@ export const submitCandidate = API + 'api/crypto/submit'
 export const VALIDATE_OIB = API + "api/oib/check"
 export const VALIDATE_OIB_VOTED = API + "api/oib/checkStatus"
 export const GENERATE_GAUTH_KEY = API + "auth/generate-secret"
+export const VERIFY_GAUTH =  API + "auth/verify"
