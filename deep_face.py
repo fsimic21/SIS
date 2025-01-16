@@ -1,21 +1,36 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from deepface import DeepFace
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import tempfile
 import os
+import base64
 
 app = FastAPI()
+class FaceCompareRequest(BaseModel):
+    image1: str  
+    image2: str 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],)
 
-@app.post("/compare_faces")
-async def compare_faces(image1: UploadFile = File(...), image2: UploadFile = File(...)):
+@app.post("/compare_faces_base64")
+async def compare_faces_base64(request: FaceCompareRequest):
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image1.filename)[1]) as tmp1:
-            tmp1.write(await image1.read())
+        img1_data = base64.b64decode(request.image1)
+        img2_data = base64.b64decode(request.image2)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp1:
+            tmp1.write(img1_data)
             img1_path = tmp1.name
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image2.filename)[1]) as tmp2:
-            tmp2.write(await image2.read())
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp2:
+            tmp2.write(img2_data)
             img2_path = tmp2.name
 
         result = DeepFace.verify(img1_path, img2_path)
@@ -23,7 +38,7 @@ async def compare_faces(image1: UploadFile = File(...), image2: UploadFile = Fil
         os.remove(img1_path)
         os.remove(img2_path)
 
-        return JSONResponse(content={"is_same_person": result["verified"]})
+        return {"is_same_person": result["verified"]}
 
     except Exception as e:
         if os.path.exists(img1_path):

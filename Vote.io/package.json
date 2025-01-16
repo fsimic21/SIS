@@ -37,6 +37,7 @@
     "react-dom": "^18.3.1",
     "react-native": "^0.76.5",
     "react-native-gesture-handler": "~2.20.2",
+    "react-native-image-picker": "^7.2.3",
     "react-native-picker": "^4.3.7",
     "react-native-reanimated": "~3.16.1",
     "react-native-rsa": "^0.0.3",

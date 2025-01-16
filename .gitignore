@@ -26,3 +26,4 @@ replay_pid*
 demo/src/main/resources/application.properties
 node_modules
 venv/Lib/site-packages
+venv/
