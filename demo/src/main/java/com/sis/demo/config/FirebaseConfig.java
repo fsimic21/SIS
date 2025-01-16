@@ -11,15 +11,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
 
     @Bean
     public FirebaseApp initializeFirebase() throws IOException {
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/sisdb-e2c4e-firebase-adminsdk-flay2-25e36b02c7.json");
+        InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("sisdb-e2c4e-firebase-adminsdk-flay2-25e36b02c7.json");
+
+        if (serviceAccount == null) {
+            throw new FileNotFoundException("Datoteka nije pronađena u resources direktorijumu");
+        }
+
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))

@@ -1,8 +1,5 @@
 package com.sis.demo.util;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
 import com.sis.demo.model.RequestLog;
 import com.sis.demo.service.RequestLogService;
 import jakarta.servlet.FilterChain;
@@ -12,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 

@@ -1,6 +1,5 @@
 package com.sis.demo.service;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
-import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import org.apache.commons.codec.binary.Base32;
 import org.springframework.stereotype.Service;
 
