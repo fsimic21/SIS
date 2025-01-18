@@ -1,95 +1,131 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, ActivityIndicator, Button, Alert, Modal, TextInput } from 'react-native';
+import { Text, View, ActivityIndicator, Button, Alert, Modal, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { fetchCandidates, SubmitCandidate } from '@/services/candidateService';
 import { Candidate } from '@/constants/candidate';
 import OIBModal from '@/components/OIBmodal';
 import { validateOIB, validateOIBVoted } from '@/services/oibService';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<string>(""); // Ensure this is string or the id type
+  const [selectedCandidate, setSelectedCandidate] = useState('');
   const [showOIBModal, setShowOIBModal] = useState(false);
-
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
+    let isMounted = true;
+
     const loadCandidates = async () => {
-      const data = await fetchCandidates();
-      setCandidates(data);
-      setLoading(false);
+      try {
+        const data = await fetchCandidates();
+        if (isMounted) {
+          setCandidates(data);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (isMounted) {
+          Alert.alert('Error', 'Failed to load candidates.');
+          setLoading(false);
+        }
+      }
     };
+
     loadCandidates();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleOIBSubmit = async (oib: string) => {
-    let exists;
-    let voted;
+  const validateOIBAndVotingStatus = async (oib: string) => {
     try {
-      exists = await validateOIB(oib);
-    } catch (e) {
-      Alert.alert("Error", "Error while fetching oib.");
+      const exists = await validateOIB(oib);
+      if (!exists) {
+        Alert.alert('Error', 'Your OIB does not exist.');
+        return false;
+      }
+
+      const voted = await validateOIBVoted(oib);
+      if (!voted) {
+        Alert.alert('Error', 'You have already voted.');
+        navigation.replace('ResultsScreen');
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while validating your OIB.');
+      return false;
     }
-    if (exists === false){
-      Alert.alert('Error', 'Your OIB does not exists',[
+  };
+  const handleOIBSubmit = async (oib: string) => {
+    const isValid = await validateOIBAndVotingStatus(oib);
+    if (!isValid) {
+      setShowOIBModal(false);
+      return;
+    }
+  
+    const success = await SubmitCandidate(oib, selectedCandidate);
+    if (success) {
+      Alert.alert('Success', 'Your vote has been submitted.', [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: 'OK',
+          onPress: () => navigation.navigate('ResultsScreen'),
         },
       ]);
+    } else {
+      Alert.alert('Error', 'Failed to submit your vote. Please try again.');
+    }
+    setShowOIBModal(false);
+  };
+  const handleCandidateSubmit = () => {
+    if (!selectedCandidate) {
+      Alert.alert('Error', 'Please select a candidate.');
       return;
-    } 
-
-    try {
-      voted = await validateOIBVoted(oib);
-    } catch (e) {
-      Alert.alert("Error", "Error while fetching oib.");
     }
-    if (voted === false){
-      {
-        Alert.alert('Error', 'You already voted', [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-        ]);
-        return;
-      } 
-    } 
-    else{
-      try{
-        await SubmitCandidate(oib, selectedCandidate);
-      }catch (e) {
-        Alert.alert("Error", "Error while fetching oib.");
-      }
-    }
-    setShowOIBModal(false)
-    
+    setShowOIBModal(true);
   };
 
-  if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
+if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading candidates...</Text>
+      </View>
+    );
+  }
+  if (!candidates.length) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>No candidates available at the moment.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
-      <Text>Select a candidate:</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Select a candidate:</Text>
+
       <Picker
         selectedValue={selectedCandidate}
-        onValueChange={(value) => setSelectedCandidate(value)} 
-        style={{ height: 50, width: '100%' }}
+        onValueChange={(value) => setSelectedCandidate(value)}
+        style={styles.picker}
       >
         <Picker.Item label="Select a candidate" value="" />
         {candidates.map((candidate) => (
-          <Picker.Item 
-            key={candidate.id} 
-            label={`${candidate.name} ${candidate.surname}`} 
-            value={candidate.id} 
+          <Picker.Item
+            key={candidate.id}
+            label={`${candidate.name} ${candidate.surname}`}
+            value={candidate.id}
           />
         ))}
       </Picker>
-      
-      <Button title="Submit" onPress={() => setShowOIBModal(true)} />
+
+      <Button title="Submit" onPress={handleCandidateSubmit} />
+
       {showOIBModal && (
-        
         <OIBModal
           onSubmit={handleOIBSubmit}
           onCancel={() => setShowOIBModal(false)}
@@ -98,3 +134,30 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    marginBottom: 10,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    marginBottom: 20,
+  },
+});

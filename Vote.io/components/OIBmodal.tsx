@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Modal } from 'react-native';
+import { View, Text, TextInput, Button, Modal, ActivityIndicator, StyleSheet } from 'react-native';
 
 interface OIBModalProps {
   onSubmit: (oib: string) => void;
@@ -9,30 +9,45 @@ interface OIBModalProps {
 const OIBModal: React.FC<OIBModalProps> = ({ onSubmit, onCancel }) => {
   const [oib, setOIB] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (oib.length !== 11) {
-      setError("OIB must be 11 characters.");
+      setError('OIB must be exactly 11 characters.');
       return;
     }
-    onSubmit(oib);
+    setError('');
+    setSubmitting(true);
+    try {
+      await onSubmit(oib);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <Modal visible={true} transparent={true} animationType="slide">
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <View style={{ padding: 20, backgroundColor: 'white', borderRadius: 8 }}>
-          <Text>Enter OIB (11 characters):</Text>
+      <View style={styles.overlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Enter OIB (11 characters):</Text>
           <TextInput
-            style={{ borderWidth: 1, width: 200, marginTop: 10, marginBottom: 10, padding: 8 }}
+            style={styles.input}
             value={oib}
             onChangeText={setOIB}
             keyboardType="numeric"
             maxLength={11}
+            placeholder="e.g., 12345678901"
           />
-          {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
-          <Button title="Confirm" onPress={handleConfirm} />
-          <Button title="Cancel" onPress={onCancel} />
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {submitting ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <Button title="Confirm" onPress={handleConfirm} />
+          )}
+          <View style={{ marginTop: 10 }}>
+            <Button title="Cancel" onPress={onCancel} color="red" />
+          </View>
         </View>
       </View>
     </Modal>
@@ -40,3 +55,34 @@ const OIBModal: React.FC<OIBModalProps> = ({ onSubmit, onCancel }) => {
 };
 
 export default OIBModal;
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContainer: {
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    width: 300,
+  },
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    padding: 8,
+    marginBottom: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+  },
+});
