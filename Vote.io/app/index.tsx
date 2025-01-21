@@ -5,8 +5,10 @@ import { useState } from "react";
 import {auth} from '../config/firebaseConfig'
 import React from "react";
 import { LOGIN_API, VERIFY_GAUTH } from "@/config/API_constants";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from "./App";
+import {useRouter} from "expo-router"
 
 
 export default function Index() {
@@ -55,7 +57,6 @@ export default function Index() {
     }
   };
   
-  
   const login = async () => {
     if (!validateEmail(email)) {
       setError("Invalid email format.");
@@ -79,6 +80,11 @@ export default function Index() {
       setLoading(false);
     }
   };
+
+  const handleRegister = () => {
+    router.push("/RegistrationScreen");
+  };
+
 
   return (
     <View style={styles.container}>
@@ -112,6 +118,7 @@ export default function Index() {
               <Button title="Submit TFA" onPress={handleTFA} />
             </>
           )}
+          <Button title="Register" onPress={handleRegister} />
         </>
       )}
     </View>

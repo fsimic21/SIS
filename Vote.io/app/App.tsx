@@ -5,11 +5,15 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './homeScreen';
 import ThankYouScreen from './ThankYouScreen';
 import ResultsScreen from './ResultsScreen';
+import RegisterScreen from './RegistrationScreen';
+import IndexScreen from "./index"; 
 
 export type RootStackParamList = {
   HomeScreen: undefined;
   ThankYouScreen: undefined;
   ResultsScreen: undefined;
+  RegisterScreen: undefined;
+  Index: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -17,7 +21,9 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="HomeScreen">
+      <Stack.Navigator screenOptions={{
+          headerShown: false, 
+        }}>
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
@@ -47,6 +53,16 @@ export default function App() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="RegisterScreen"
+          component={RegisterScreen}
+          options={{
+            title: 'Register',
+            gestureEnabled: false,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen name="Index" component={IndexScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

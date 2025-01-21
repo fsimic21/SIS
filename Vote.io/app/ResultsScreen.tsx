@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 import { fetchVoteResults } from '@/services/candidateService';
-
+import { useRouter } from "expo-router";
 interface Candidate {
   id: string;
   name: string;
@@ -12,7 +12,7 @@ interface Candidate {
 export default function ResultsScreen() {
   const [results, setResults] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter();
   useEffect(() => {
     const loadResults = async () => {
       try {

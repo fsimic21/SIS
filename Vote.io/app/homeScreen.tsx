@@ -6,6 +6,7 @@ import { Candidate } from '@/constants/candidate';
 import OIBModal from '@/components/OIBmodal';
 import { validateOIB, validateOIBVoted } from '@/services/oibService';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
@@ -13,7 +14,7 @@ export default function HomeScreen() {
   const [selectedCandidate, setSelectedCandidate] = useState('');
   const [showOIBModal, setShowOIBModal] = useState(false);
   const navigation = useNavigation<any>();
-
+  const router = useRouter();
   useEffect(() => {
     let isMounted = true;
 
@@ -50,7 +51,7 @@ export default function HomeScreen() {
       const voted = await validateOIBVoted(oib);
       if (!voted) {
         Alert.alert('Error', 'You have already voted.');
-        navigation.replace('ResultsScreen');
+        router.replace('/ResultsScreen');
         return false;
       }
 
@@ -72,7 +73,7 @@ export default function HomeScreen() {
       Alert.alert('Success', 'Your vote has been submitted.', [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('ResultsScreen'),
+          onPress: () => router.push('/ResultsScreen'),
         },
       ]);
     } else {
