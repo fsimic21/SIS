@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, Button, Text,Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { GENERATE_GAUTH_KEY, REGISTRATION_API } from '@/config/API_constants';
-import { useRouter } from 'expo-router';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from './App';
+import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker"
 
-const FACE_MATCH_API = "http://localhost:8000/compare_faces_base64";
-
-const RegisterScreen = () => {
-  const router = useRouter();
+export default function RegisterScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +19,8 @@ const RegisterScreen = () => {
   const [image2, setImage2] = useState<string | null>(null);
   const [faceMatchResult, setFaceMatchResult] = useState('');
   const [isFaceMatched, setIsFaceMatched] = useState(false); 
-
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const router = useRouter();
 
   const isValidPassword = (pw: string) => {
     const regex = /^(?=.*[A-Z]).{8,}$/;
@@ -83,20 +84,26 @@ const RegisterScreen = () => {
     }
   };
 
-  const pickImage = (setImage: React.Dispatch<React.SetStateAction<string | null>>) => {
-    launchImageLibrary(
-      { mediaType: 'photo', quality: 1 },
-      (response) => {
-        if (response.didCancel) {
-          console.log('User cancelled image picker');
-        } else if (response.errorMessage) {
-          console.log('ImagePicker Error: ', response.errorMessage);
-        } else if (response.assets && response.assets[0].uri) {
-          setImage(response.assets[0].uri);
-        }
-      }
-    );
+  const pickImage = async (
+    setImage: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission to access media library is required!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets?.length > 0) {
+      setImage(result.assets[0].base64 || null);
+    }
   };
+  
 
   const compareFaces = async () => {
     if (!image1 || !image2) {
@@ -106,23 +113,14 @@ const RegisterScreen = () => {
     }
 
     try {
-      const base64Img1 = image1.split(',')[1];
-      const base64Img2 = image2.split(',')[1];
-
-      if (!base64Img1 || !base64Img2) {
-        setFaceMatchResult('Error extracting Base64 data');
-        setIsFaceMatched(false);
-        return;
-      }
-
       const response = await fetch(FACE_MATCH_API, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          image1: base64Img1,
-          image2: base64Img2,
+          image1: image1,
+          image2: image2,
         }),
       });
 
@@ -146,11 +144,11 @@ const RegisterScreen = () => {
     }
   };
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
 
-      {}
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -160,7 +158,6 @@ const RegisterScreen = () => {
         onChangeText={setEmail}
       />
 
-      {}
       <TextInput
         style={styles.input}
         placeholder="Password (8+ chars, 1 uppercase)"
@@ -169,7 +166,6 @@ const RegisterScreen = () => {
         onChangeText={setPassword}
       />
 
-      {}
       <TextInput
         style={styles.input}
         placeholder="Re-enter Password"
@@ -178,32 +174,38 @@ const RegisterScreen = () => {
         onChangeText={setRepassword}
       />
 
-      {}
       <View style={styles.row}>
         <TouchableOpacity style={styles.imageButton} onPress={() => pickImage(setImage1)}>
           <Text style={styles.btnText}>Pick Image 1</Text>
         </TouchableOpacity>
-        {image1 && <Text style={styles.imageStatus}>Image 1 ready</Text>}
+        {image1 && (
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${image1}` }}
+            style={styles.thumbnail}
+          />
+        )}
       </View>
 
       <View style={styles.row}>
         <TouchableOpacity style={styles.imageButton} onPress={() => pickImage(setImage2)}>
           <Text style={styles.btnText}>Pick Image 2</Text>
         </TouchableOpacity>
-        {image2 && <Text style={styles.imageStatus}>Image 2 ready</Text>}
+        {image2 && (
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${image2}` }}
+            style={styles.thumbnail}
+          />
+        )}
       </View>
 
-      {}
       <TouchableOpacity style={styles.compareButton} onPress={compareFaces}>
         <Text style={styles.btnText}>Compare Faces</Text>
       </TouchableOpacity>
 
-      {}
       {faceMatchResult ? (
         <Text style={styles.faceResult}>{faceMatchResult}</Text>
       ) : null}
 
-      {}
       <TouchableOpacity
         style={[
           styles.registerButton,
@@ -215,9 +217,8 @@ const RegisterScreen = () => {
         <Text style={styles.btnText}>Register</Text>
       </TouchableOpacity>
 
-      {}
       {isGeneratingKey && <Text style={styles.loadingText}>Generating secret key...</Text>}
-      
+
       {responseMessage ? (
         responseMessage.startsWith('Error') ||
         responseMessage.startsWith('Registration') ||
@@ -234,15 +235,13 @@ const RegisterScreen = () => {
               value={responseMessage}
               editable={false}
             />
-            <Button title="Login" onPress={() => router.replace("/")} />
+            <Button title="Login" onPress={() => router.replace('/')} />
           </View>
         )
       ) : null}
     </View>
   );
-};
-
-export default RegisterScreen;
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -283,10 +282,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     marginBottom: 15,
-  },
-  imageStatus: {
-    fontSize: 14,
-    color: '#333',
   },
   faceResult: {
     fontSize: 14,
@@ -339,5 +334,12 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f0f0f0',
     marginBottom: 10,
+  },
+  thumbnail: {
+    width: 70,
+    height: 70,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
 });

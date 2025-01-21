@@ -1,4 +1,4 @@
-const API = 'http://localhost:8080/';
+const API = 'http://192.168.137.1:8080/';
 export const LOGIN_API = API + "auth/login"
 export const REGISTRATION_API = API + "auth/register"
 export const getCandidates = API + 'api/candidates/'
@@ -7,3 +7,4 @@ export const VALIDATE_OIB = API + "api/oib/check"
 export const VALIDATE_OIB_VOTED = API + "api/oib/checkStatus"
 export const GENERATE_GAUTH_KEY = API + "auth/generate-secret"
 export const VERIFY_GAUTH =  API + "auth/verify"
+export const FACE_MATCH_API = API + "compare_faces_base64"
