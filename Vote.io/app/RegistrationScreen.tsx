@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text,Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { GENERATE_GAUTH_KEY, REGISTRATION_API } from '@/config/API_constants';
+import { FACE_MATCH_API, GENERATE_GAUTH_KEY, REGISTRATION_API } from '@/config/API_constants';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from './App';
